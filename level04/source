@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <string.h>
+#include <sys/prctl.h>
+#include <sys/ptrace.h>
+
+int main(int argc, const char **argv, const char **envp)
+{
+    int child_pid;
+    char shellcode[128];
+    int status;
+    int signal;
+    int ptrace_result;
+
+    child_pid = fork();
+    memset(shellcode, 0, sizeof(shellcode));
+    status = 0;
+    if (child_pid)
+    {
+        do
+        {
+            wait(&status);
+            signal = status;
+            if ((status & 0x7F) == 0 || ((char)((status & 0x7F) + 1) >> 1) > 0)
+            {
+                puts("child is exiting...");
+                return 0;
+            }
+            ptrace_result = ptrace(3, child_pid, 44, 0);
+        }
+        while (ptrace_result != 11);
+        puts("no exec() for you");
+        kill(child_pid, 9);
+    }
+    else
+    {
+        prctl(1, 1);
+        ptrace(0, 0, 0, 0);
+        puts("Give me some shellcode, k");
+        gets(shellcode);
+    }
+    return 0;
+}

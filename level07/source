@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int read_number(char *data)
+{
+    int index;
+
+    printf(" Index: ");
+    index = get_unum();
+    printf(" Number at data[%u] is %u\n", index, data[4 * index]);
+    return 0;
+}
+
+int store_number(char *data)
+{
+    unsigned int number;
+    unsigned int index;
+
+    printf(" Number: ");
+    number = get_unum();
+    printf(" Index: ");
+    index = get_unum();
+    if ( index == 3 * (index / 3) || HIBYTE(number) == 183 )
+    {
+        puts(" *** ERROR! ***");
+        puts("   This index is reserved for wil!");
+        puts(" *** ERROR! ***");
+        return 1;
+    }
+    else
+    {
+        data[4 * index] = number;
+        return 0;
+    }
+}
+
+int main(int argc, const char **argv, const char **envp)
+{
+    char buffer[400]; 
+    int number; 
+    char command[20]; 
+
+    number = 0;
+    memset(buffer, 0, sizeof(buffer));
+    while ( *argv )
+    {
+        memset(*argv, 0, strlen(*argv));
+        ++argv;
+    }
+    while ( *envp )
+    {
+        memset(*envp, 0, strlen(*envp));
+        ++envp;
+    }
+    puts(
+        "----------------------------------------------------\n"
+        "  Welcome to wil's crappy number storage service!   \n"
+        "----------------------------------------------------\n"
+        " Commands:                                          \n"
+        "    store - store a number into the data storage    \n"
+        "    read  - read a number from the data storage     \n"
+        "    quit  - exit the program                        \n"
+        "----------------------------------------------------\n"
+        "   wil has reserved some storage :>                 \n"
+        "----------------------------------------------------\n");
+    while ( 1 )
+    {
+        printf("Input command: ");
+        number = 1;
+        fgets(&command, 20, stdin);
+        command[strlen(command)] = 0;
+        if ( !memcmp(&command, "store", 5) )
+        {
+            number = store_number(buffer);
+            goto LABEL_13;
+        }
+        if ( !memcmp(&command, "read", 4) )
+        {
+            number = read_number(buffer);
+            goto LABEL_13;
+        }
+        if ( !memcmp(&command, "quit", 4) )
+            return 0;
+
+
+        LABEL_13:
+                if ( number )
+                printf(" Failed to do %s command\n", &command);
+                else
+                printf(" Completed %s command successfully\n", &command);
+    }
+}
