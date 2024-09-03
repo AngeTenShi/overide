@@ -4,21 +4,12 @@
 
 int main(int argc, const char **argv, const char **envp)
 {
-    char username[96];
-    int password_length;
-    char password[48];
-    char input[96];
-    int access_granted;
-    int password_read;
-    FILE *password_file;
+    char username[100] = {0};
+    char password[48] = {0};
+    char input[100] = {0};
 
-    memset(input, 0, sizeof(input));
-    access_granted = 0;
-    memset(password, 0, sizeof(password));
-    memset(username, 0, sizeof(username));
-    password_length = 0;
-    password_file = NULL;
-    password_read = 0;
+    int password_read = 0;
+    FILE *password_file = NULL;
 
     password_file = fopen("/home/users/level03/.pass", "r");
     if (!password_file)
@@ -32,8 +23,8 @@ int main(int argc, const char **argv, const char **envp)
 
     if (password_read != 41)
     {
-        fwrite("ERROR: failed to read password file\n", 1uLL, 35uLL, stderr);
-        fwrite("ERROR: failed to read password file\n", 1uLL, 35uLL, stderr);
+        fwrite("ERROR: failed to read password file\n", 1uLL, 36uLL, stderr);
+        fwrite("ERROR: failed to read password file\n", 1uLL, 36uLL, stderr);
         exit(1);
     }
 
