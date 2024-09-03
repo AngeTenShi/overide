@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <time.h>
 
-int decrypt(char password)
+int decrypt(char xor_key)
 {
     unsigned int i;
     unsigned int length;
@@ -11,7 +13,7 @@ int decrypt(char password)
     strcpy(encrypted, "Q}|u`sfg~sf{}|a3");
     length = strlen(encrypted);
     for (i = 0; i < length; ++i)
-        encrypted[i] ^= password;
+        encrypted[i] ^= xor_key;
     if (!strcmp(encrypted, "Congratulations!"))
         return (system("/bin/sh"));
     else
@@ -25,27 +27,27 @@ int test(int user_input, int secret)
 
     switch (user_input - secret)
     {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 16:
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-            result = decrypt(user_input - secret);
-            break;
-        default:
-            difference = rand();
-            result = decrypt(difference);
-            break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+        result = decrypt(user_input - secret);
+        break;
+    default:
+        difference = rand();
+        result = decrypt(difference);
+        break;
     }
     return result;
 }
