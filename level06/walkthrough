@@ -4,6 +4,7 @@ On voit que le login est hashé dans la fonction auth et doit correspondre au se
 
 on peut donc récupérer cette fonction dans ghidra et l'executer avec comme input notre login
 
+```
 #include <stdio.h>
 
 int main()
@@ -19,6 +20,6 @@ int main()
     printf("%d\n", v4);
     return(0);
 }
-
+```
 
 avec ce code on obtient le serial à rentrer
