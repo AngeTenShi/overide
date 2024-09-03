@@ -1,41 +1,47 @@
 #include <stdio.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <sys/prctl.h>
 #include <sys/ptrace.h>
+#include <sys/reg.h>
+#include <signal.h>
+#include <unistd.h>
 
 int main(int argc, const char **argv, const char **envp)
 {
-    int child_pid;
-    char shellcode[128];
-    int status;
+    int pid;
+    char shellcode[128] = {0};
+    int status = 0;
     int signal;
     int ptrace_result;
 
-    child_pid = fork();
-    memset(shellcode, 0, sizeof(shellcode));
-    status = 0;
-    if (child_pid)
+    pid = fork();
+    if (pid)
     {
-        do
+        int last_syscall;
+        while (1)
         {
+            int status;
             wait(&status);
-            signal = status;
-            if ((status & 0x7F) == 0 || ((char)((status & 0x7F) + 1) >> 1) > 0)
+
+            if (WIFEXITED(status) || WIFSIGNALED(status))
             {
                 puts("child is exiting...");
                 return 0;
             }
-            ptrace_result = ptrace(3, child_pid, 44, 0);
+
+            if (ptrace(PTRACE_PEEKUSER, pid, 4 * ORIG_EAX, 0))
+                break;
         }
-        while (ptrace_result != 11);
         puts("no exec() for you");
-        kill(child_pid, 9);
+        kill(pid, SIGKILL);
     }
     else
     {
-        prctl(1, 1);
-        ptrace(0, 0, 0, 0);
-        puts("Give me some shellcode, k");
+        prctl(PR_SET_PDEATHSIG, SIGHUP);
+        ptrace(PTRACE_TRACEME, 0, 0, 0);
+        printf("Give me some shellcode, k\n");
+
         gets(shellcode);
     }
     return 0;
