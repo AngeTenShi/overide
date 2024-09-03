@@ -2,18 +2,40 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 
-int read_number(char *data)
+void clear_stdin()
+{
+    while (1)
+    {
+        char result = (char)getchar();
+        if (result == '\n' || result == 0xFF)
+            break;
+    }
+}
+
+unsigned int get_unum()
+{
+    unsigned int number = 0;
+
+    fflush(stdout);
+    scanf("%u", &number);
+    clear_stdin();
+
+    return number;
+}
+
+bool read_number(unsigned int *data)
 {
     int index;
 
     printf(" Index: ");
     index = get_unum();
-    printf(" Number at data[%u] is %u\n", index, data[4 * index]);
-    return 0;
+    printf(" Number at data[%u] is %u\n", index, data[index]);
+    return false;
 }
 
-int store_number(char *data)
+bool store_number(int *data)
 {
     unsigned int number;
     unsigned int index;
@@ -22,34 +44,35 @@ int store_number(char *data)
     number = get_unum();
     printf(" Index: ");
     index = get_unum();
-    if ( index == 3 * (index / 3) || HIBYTE(number) == 183 )
+
+    // no write on indices that are multiples of 3, and no write when numbers have the form 0xb7xxxxxx
+    if (index == 3 * (index / 3) || (number >> 24) == 0xB7)
     {
         puts(" *** ERROR! ***");
         puts("   This index is reserved for wil!");
         puts(" *** ERROR! ***");
-        return 1;
+        return true;
     }
     else
     {
-        data[4 * index] = number;
-        return 0;
+        data[index] = number;
+        return false;
     }
 }
 
-int main(int argc, const char **argv, const char **envp)
+int main(int argc, char **argv, char **envp)
 {
-    char buffer[400]; 
-    int number; 
-    char command[20]; 
+    int numbers[100] = {0};
+    char command[20];
+    bool error = false;
 
-    number = 0;
-    memset(buffer, 0, sizeof(buffer));
-    while ( *argv )
+    // Shellcode protection
+    while (*argv)
     {
         memset(*argv, 0, strlen(*argv));
         ++argv;
     }
-    while ( *envp )
+    while (*envp)
     {
         memset(*envp, 0, strlen(*envp));
         ++envp;
@@ -65,30 +88,25 @@ int main(int argc, const char **argv, const char **envp)
         "----------------------------------------------------\n"
         "   wil has reserved some storage :>                 \n"
         "----------------------------------------------------\n");
-    while ( 1 )
+    while (1)
     {
         printf("Input command: ");
-        number = 1;
-        fgets(&command, 20, stdin);
+        error = true;
+
+        fgets(command, 20, stdin);
         command[strlen(command)] = 0;
-        if ( !memcmp(&command, "store", 5) )
-        {
-            number = store_number(buffer);
-            goto LABEL_13;
-        }
-        if ( !memcmp(&command, "read", 4) )
-        {
-            number = read_number(buffer);
-            goto LABEL_13;
-        }
-        if ( !memcmp(&command, "quit", 4) )
+
+        if (!memcmp(&command, "quit", 4))
             return 0;
 
+        if (!memcmp(&command, "store", 5))
+            error = store_number(numbers);
+        if (!memcmp(&command, "read", 4))
+            error = read_number(numbers);
 
-        LABEL_13:
-                if ( number )
-                printf(" Failed to do %s command\n", &command);
-                else
-                printf(" Completed %s command successfully\n", &command);
+        if (error)
+            printf(" Failed to do %s command\n", command);
+        else
+            printf(" Completed %s command successfully\n", command);
     }
 }
