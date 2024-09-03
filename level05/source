@@ -1,19 +1,19 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-int main(int argc, const char **argv, const char **envp)
+void main(int argc, const char **argv, const char **envp)
 {
-  int result;
   char input[100];
   unsigned int i;
 
   i = 0;
   fgets(input, 100, stdin);
-  for ( i = 0; i < strlen(input); ++i )
+  for (i = 0; i < strlen(input); ++i)
   {
-    if ( input[i] > 64 && input[i] <= 90 )
-        input[i] ^= 32;
+    if (input[i] >= 'A' && input[i] <= 'Z')
+      input[i] ^= ' ';
   }
   printf(input);
   exit(0);
-  return result;
 }
